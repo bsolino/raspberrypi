@@ -39,3 +39,4 @@ while True:
     if t_cycle > 0:
         time.sleep(t_cycle)
     
+GPIO.cleanup()

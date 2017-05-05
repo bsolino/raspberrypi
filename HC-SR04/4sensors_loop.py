@@ -59,5 +59,5 @@ while True:
 
     print('{: .3f}m\t{: .3f}m\t{: .3f}m\t{: .3f}m\t'.format(d1, d2, d3, d4))
 
-
+GPIO.cleanup()
     
