@@ -29,7 +29,7 @@ OUTPUT_FOLDER = Path(Path.home(), "weather")
 
 OUTPUT_FOLDER.mkdir(parents = True, exist_ok=True)
 WB_NAME = "weather.xlsx"
-SHEET = "Sheet1"
+SHEET = "Sheet"
 MEASURE_WAIT = 10 * 60 # Time between measures (in seconds)
 RETRY_WAIT = 2. # Time between retries (in seconds)
 #dhtDevice = adafruit_dht.DHT11(PIN, use_pulseio=False)
