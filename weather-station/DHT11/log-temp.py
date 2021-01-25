@@ -23,17 +23,17 @@ from pathlib import Path
 
 PIN = board.D4
 OUTPUT_FOLDER = Path(Path.home(), "weather")
-
+MEASURE_WAIT = 10 * 60 # Time between measures (in seconds)
+RETRY_WAIT = 2. # Time between retries (in seconds)
+N_MEASURES = 5
 
 # Initialization
 
 OUTPUT_FOLDER.mkdir(parents = True, exist_ok=True)
 WB_NAME = "weather.xlsx"
 SHEET = "Sheet"
-MEASURE_WAIT = 10 * 60 # Time between measures (in seconds)
-RETRY_WAIT = 2. # Time between retries (in seconds)
-#dhtDevice = adafruit_dht.DHT11(PIN, use_pulseio=False)
 dhtDevice = adafruit_dht.DHT11(PIN)
+#dhtDevice = adafruit_dht.DHT11(PIN, use_pulseio=False)
 
 #wb_date = datetime.now().date()
 
@@ -47,10 +47,10 @@ except FileNotFoundError as error:
     wb = Workbook()
     sheet = wb.create_sheet(SHEET)
 
+i_measure = 0
 while True:
 #    date = datetime.now().date()
 #    if date > wb_date(): # New wb per day
-
 
     try:
         # Print the values to the serial port
@@ -63,6 +63,7 @@ while True:
         now = datetime.now()
         print(f"{now.date()} {now.time()}\tTemp: {temperature:.1f} C\tHumidity: {humidity} %")
 
+        i_measure += 1
         row = (now.date(), now.time(), temperature, humidity)
         sheet.append(row)
 
@@ -70,12 +71,18 @@ while True:
 
     except RuntimeError as error:
         # Errors happen fairly often, DHT's are hard to read, just keep going
-        print(error.args[0])
+#        print(error.args[0])
         time.sleep(RETRY_WAIT)
         continue
     except Exception as error:
         dhtDevice.exit()
+        wb.save(wb_path) # In case it's killed while saving
         raise error
-
-    time.sleep(MEASURE_WAIT)
+    
+    if i_measure == N_MEASURES:
+        i_measure = 0
+        print("Sleep")
+        time.sleep(MEASURE_WAIT)
+    else:
+        time.sleep(RETRY_WAIT)
 
