@@ -67,7 +67,6 @@ while True:
         row = (now.date(), now.time(), temperature, humidity)
         sheet.append(row)
 
-        wb.save(wb_path)
 
     except RuntimeError as error:
         # Errors happen fairly often, DHT's are hard to read, just keep going
@@ -78,8 +77,9 @@ while True:
         dhtDevice.exit()
         wb.save(wb_path) # In case it's killed while saving
         raise error
-    
+
     if i_measure == N_MEASURES:
+        wb.save(wb_path)
         i_measure = 0
         print("Sleep")
         time.sleep(MEASURE_WAIT)
