@@ -40,12 +40,11 @@ dhtDevice = adafruit_dht.DHT11(PIN)
 wb_path = Path(OUTPUT_FOLDER, WB_NAME)
 try:
     wb = load_workbook(wb_path)
-    sheet = wb[SHEET]
 except FileNotFoundError as error:
     print(error)
     print("Creating new file")
     wb = Workbook()
-    sheet = wb.create_sheet(SHEET)
+sheet = wb[SHEET]
 
 i_measure = 0
 while True:
