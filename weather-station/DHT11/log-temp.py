@@ -30,19 +30,19 @@ N_MEASURES = 5
 # Initialization
 
 OUTPUT_FOLDER.mkdir(parents = True, exist_ok=True)
-WB_NAME = "weather.xlsx"
+WB_NAME = "{date}-weather.xlsx"
 SHEET = "Sheet"
 dhtDevice = adafruit_dht.DHT11(PIN)
 #dhtDevice = adafruit_dht.DHT11(PIN, use_pulseio=False)
 
-#wb_date = datetime.now().date()
-
-wb_path = Path(OUTPUT_FOLDER, WB_NAME)
+wb_date = datetime.now().date()
+wb_name = WB_NAME.format(date = wb_date)
+wb_path = Path(OUTPUT_FOLDER, wb_name)
 try:
     wb = load_workbook(wb_path)
 except FileNotFoundError as error:
     print(error)
-    print("Creating new file")
+    print(f"Creating new file {wb_path}")
     wb = Workbook()
 sheet = wb[SHEET]
 
