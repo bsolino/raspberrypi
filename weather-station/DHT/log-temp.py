@@ -21,10 +21,12 @@ from pathlib import Path
 
 # Configuration
 
-PIN = board.D4
+DEBUG = False
+PIN = board.D17
 OUTPUT_FOLDER = Path(Path.home(), "weather")
-MEASURE_WAIT = 5 * 60 # Time between measures (in seconds)
-RETRY_WAIT = 2. # Time between retries (in seconds)
+RETRY_WAIT = 2.5 # Time between retries (in seconds)
+#MEASURE_WAIT = 5 * 60 # Time between measures (in seconds)
+MEASURE_WAIT = RETRY_WAIT # Time between measures (in seconds)
 N_MEASURES = 5
 
 # Initialization
@@ -32,8 +34,8 @@ N_MEASURES = 5
 OUTPUT_FOLDER.mkdir(parents = True, exist_ok=True)
 WB_NAME = "{date}-weather.xlsx"
 SHEET = "Sheet"
-dhtDevice = adafruit_dht.DHT11(PIN)
-#dhtDevice = adafruit_dht.DHT11(PIN, use_pulseio=False)
+dhtDevice = adafruit_dht.DHT22(PIN)
+#dhtDevice = adafruit_dht.DHT22(PIN, use_pulseio=False)
 
 wb_date = datetime.now().date()
 wb_name = WB_NAME.format(date = wb_date)
@@ -47,12 +49,19 @@ except FileNotFoundError as error:
 sheet = wb[SHEET]
 
 i_measure = 0
+wait = False
 while True:
 #    date = datetime.now().date()
 #    if date > wb_date(): # New wb per day
 
     try:
         # Print the values to the serial port
+        if wait:
+            if DEBUG:
+                print(f"Waiting {RETRY_WAIT}s")
+            time.sleep(RETRY_WAIT)
+            wait = False
+
         temperature = dhtDevice.temperature
         humidity = dhtDevice.humidity
         
@@ -65,9 +74,9 @@ while True:
         i_measure += 1
         row = (now.date(), now.time(), temperature, humidity)
         sheet.append(row)
+        wb.save(wb_path)
     
         if i_measure == N_MEASURES:
-            wb.save(wb_path)
             i_measure = 0
             print("Sleep")
             time.sleep(MEASURE_WAIT)
@@ -82,8 +91,9 @@ while True:
 
     except RuntimeError as error:
         # Errors happen fairly often, DHT's are hard to read, just keep going
-#        print(error.args[0])
-        time.sleep(RETRY_WAIT)
+        if DEBUG:
+            print(error.args[0])
+        wait = True
     except Exception as error:
         print("Exiting...")
         dhtDevice.exit()
