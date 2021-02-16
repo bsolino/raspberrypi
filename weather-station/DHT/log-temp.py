@@ -23,7 +23,7 @@ from pathlib import Path
 
 PIN = board.D4
 OUTPUT_FOLDER = Path(Path.home(), "weather")
-MEASURE_WAIT = 10 * 60 # Time between measures (in seconds)
+MEASURE_WAIT = 5 * 60 # Time between measures (in seconds)
 RETRY_WAIT = 2. # Time between retries (in seconds)
 N_MEASURES = 5
 
@@ -65,23 +65,28 @@ while True:
         i_measure += 1
         row = (now.date(), now.time(), temperature, humidity)
         sheet.append(row)
+    
+        if i_measure == N_MEASURES:
+            wb.save(wb_path)
+            i_measure = 0
+            print("Sleep")
+            time.sleep(MEASURE_WAIT)
+        else:
+            time.sleep(RETRY_WAIT)
 
+    except KeyboardInterrupt as error:
+        print("Exiting...")
+        dhtDevice.exit()
+        wb.save(wb_path) # In case it's killed while saving
+        raise error
 
     except RuntimeError as error:
         # Errors happen fairly often, DHT's are hard to read, just keep going
 #        print(error.args[0])
         time.sleep(RETRY_WAIT)
-        continue
     except Exception as error:
+        print("Exiting...")
         dhtDevice.exit()
         wb.save(wb_path) # In case it's killed while saving
         raise error
-
-    if i_measure == N_MEASURES:
-        wb.save(wb_path)
-        i_measure = 0
-        print("Sleep")
-        time.sleep(MEASURE_WAIT)
-    else:
-        time.sleep(RETRY_WAIT)
 
