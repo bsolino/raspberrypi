@@ -22,9 +22,9 @@ from pathlib import Path
 # Configuration
 
 DEBUG = False
-PIN = board.D17
+PIN = board.D18
 OUTPUT_FOLDER = Path(Path.home(), "weather")
-RETRY_WAIT = 2.5 # Time between retries (in seconds)
+RETRY_WAIT = 2 # Time between retries (in seconds)
 #MEASURE_WAIT = 5 * 60 # Time between measures (in seconds)
 MEASURE_WAIT = RETRY_WAIT # Time between measures (in seconds)
 N_MEASURES = 5
@@ -57,10 +57,12 @@ while True:
     try:
         # Print the values to the serial port
         if wait:
-            if DEBUG:
-                print(f"Waiting {RETRY_WAIT}s")
+#            if DEBUG:
+#                print(f"Waiting {RETRY_WAIT}s")
             time.sleep(RETRY_WAIT)
             wait = False
+
+        now = datetime.now()
 
         temperature = dhtDevice.temperature
         humidity = dhtDevice.humidity
@@ -68,7 +70,6 @@ while True:
         if temperature is None or humidity is None:
             raise RuntimeError(f"DHT Returned a None value: T: {temperature}, H: {humidity}")
 
-        now = datetime.now()
         print(f"{now.date()} {now.time()}\tTemp: {temperature:.1f} C\tHumidity: {humidity} %")
 
         i_measure += 1
@@ -92,7 +93,7 @@ while True:
     except RuntimeError as error:
         # Errors happen fairly often, DHT's are hard to read, just keep going
         if DEBUG:
-            print(error.args[0])
+            print(f"{now.date()} {now.time()} {error.args[0]}")
         wait = True
     except Exception as error:
         print("Exiting...")
